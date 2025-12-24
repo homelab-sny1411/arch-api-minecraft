@@ -2,6 +2,7 @@ import { config } from '../config/environment';
 import { MinecraftQueryService } from './minecraftQueryService';
 import { SystemdService } from './systemdService';
 import { ShutdownService } from './shutdownService';
+import { logger } from '../utils/logger';
 
 export class AutoShutdownService {
     private queryService: MinecraftQueryService;
@@ -19,17 +20,17 @@ export class AutoShutdownService {
 
     start(): void {
         if (!config.autoShutdown.enabled) {
-            console.log('Auto-shutdown is disabled in configuration');
+            logger.info('Auto-shutdown is disabled in configuration');
             return;
         }
 
         if (this.isRunning) {
-            console.log('Auto-shutdown monitoring is already running');
+            logger.info('Auto-shutdown monitoring is already running');
             return;
         }
 
         this.isRunning = true;
-        console.log(`Auto-shutdown monitoring started. Check interval: ${config.autoShutdown.checkInterval}ms, Idle time: ${config.autoShutdown.idleTime}ms`);
+        logger.info(`Auto-shutdown monitoring started. Check interval: ${config.autoShutdown.checkInterval}ms, Idle time: ${config.autoShutdown.idleTime}ms`);
 
         this.checkInterval = setInterval(async () => {
             await this.checkPlayersAndShutdown();
@@ -43,7 +44,7 @@ export class AutoShutdownService {
         }
         this.isRunning = false;
         this.idleStartTime = null;
-        console.log('Auto-shutdown monitoring stopped');
+        logger.info('Auto-shutdown monitoring stopped');
     }
 
     private async checkPlayersAndShutdown(): Promise<void> {
@@ -53,7 +54,7 @@ export class AutoShutdownService {
             if (!isServiceRunning) {
                 if (this.idleStartTime !== null) {
                     this.idleStartTime = null;
-                    console.log('Server is stopped, resetting idle timer');
+                    logger.info('Server is stopped, resetting idle timer');
                 }
                 return;
             }
@@ -64,44 +65,44 @@ export class AutoShutdownService {
             if (playerCount.online === 0) {
                 if (this.idleStartTime === null) {
                     this.idleStartTime = currentTime;
-                    console.log('Server is empty, starting idle timer');
+                    logger.info('Server is empty, starting idle timer');
                 } else {
                     const idleDuration = currentTime - this.idleStartTime;
                     const remainingTime = config.autoShutdown.idleTime - idleDuration;
                     const minutesRemaining = Math.ceil(remainingTime / 60000);
 
-                    console.log(`Server empty for ${Math.floor(idleDuration / 60000)} minutes. Shutdown in ${minutesRemaining} minutes if no one joins.`);
+                    logger.info(`Server empty for ${Math.floor(idleDuration / 60000)} minutes. Shutdown in ${minutesRemaining} minutes if no one joins.`);
 
                     if (idleDuration >= config.autoShutdown.idleTime) {
-                        console.log('Idle time exceeded, initiating shutdown sequence...');
+                        logger.warn('Idle time exceeded, initiating shutdown sequence...');
                         await this.performShutdown();
                     }
                 }
             } else {
                 if (this.idleStartTime !== null) {
-                    console.log(`Players detected (${playerCount.online}/${playerCount.max}), resetting idle timer`);
+                    logger.info(`Players detected (${playerCount.online}/${playerCount.max}), resetting idle timer`);
                     this.idleStartTime = null;
                 }
             }
         } catch (error: any) {
-            console.error(`Auto-shutdown check failed: ${error.message}`);
+            logger.error({ err: error }, 'Auto-shutdown check failed');
         }
     }
 
     private async performShutdown(): Promise<void> {
         try {
-            console.log('Stopping Minecraft server...');
+            logger.warn('Stopping Minecraft server...');
             await this.systemdService.stopService();
 
-            console.log('Waiting 5 seconds before system shutdown...');
+            logger.warn('Waiting 5 seconds before system shutdown...');
             setTimeout(async () => {
-                console.log('Shutting down system...');
+                logger.warn('Shutting down system...');
                 await this.shutdownService.shutdownSystem();
             }, 5000);
 
             this.stop();
         } catch (error: any) {
-            console.error(`Failed to perform shutdown: ${error.message}`);
+            logger.error({ err: error }, 'Failed to perform shutdown');
         }
     }
 

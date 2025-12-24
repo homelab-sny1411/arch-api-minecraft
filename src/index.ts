@@ -3,6 +3,7 @@ import { config } from './config/environment';
 import { createMinecraftRouter } from './routes/minecraftRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import { AutoShutdownService } from './services/autoShutdownService';
+import { logger } from './utils/logger';
 
 const app = express();
 const autoShutdownService = new AutoShutdownService();
@@ -19,22 +20,22 @@ app.use('/minecraft', createMinecraftRouter(autoShutdownService));
 app.use(errorHandler);
 
 app.listen(config.api.port, () => {
-    console.log(`API started on port ${config.api.port}`);
-    console.log(`Environment: ${config.api.nodeEnv}`);
-    console.log(`Minecraft service: ${config.minecraft.serviceName}`);
-    console.log(`Minecraft server: ${config.minecraft.host}:${config.minecraft.port}`);
+    logger.info(`API started on port ${config.api.port}`);
+    logger.info(`Environment: ${config.api.nodeEnv}`);
+    logger.info(`Minecraft service: ${config.minecraft.serviceName}`);
+    logger.info(`Minecraft server: ${config.minecraft.host}:${config.minecraft.port}`);
 
     autoShutdownService.start();
 });
 
 process.on('SIGTERM', () => {
-    console.log('SIGTERM received, stopping auto-shutdown service...');
+    logger.info('SIGTERM received, stopping auto-shutdown service...');
     autoShutdownService.stop();
     process.exit(0);
 });
 
 process.on('SIGINT', () => {
-    console.log('SIGINT received, stopping auto-shutdown service...');
+    logger.info('SIGINT received, stopping auto-shutdown service...');
     autoShutdownService.stop();
     process.exit(0);
 });
