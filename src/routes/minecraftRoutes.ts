@@ -11,6 +11,7 @@ export const createMinecraftRouter = (autoShutdownService?: AutoShutdownService)
     router.post('/restart', controller.restart);
     router.get('/status', controller.status);
     router.get('/auto-shutdown/status', controller.autoShutdownStatus);
+    router.post('/rcon', controller.rcon);
 
     return router;
 };
@@ -23,5 +24,6 @@ router.post('/stop', controller.stop);
 router.post('/restart', controller.restart);
 router.get('/status', controller.status);
 router.get('/auto-shutdown/status', controller.autoShutdownStatus);
+router.post('/rcon', controller.rcon);
 
 export default router;
