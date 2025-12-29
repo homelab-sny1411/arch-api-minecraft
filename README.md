@@ -10,6 +10,20 @@ API REST pour la gestion et le monitoring d'un serveur Minecraft avec extinction
 - **Logging structuré** : Utilisation de Pino pour des logs clairs et performants
 - **Configuration flexible** : Toute la configuration via variables d'environnement
 
+## Documentation de l'API
+
+Une documentation interactive complète est disponible via Swagger UI. Elle inclut:
+- Tous les endpoints avec descriptions détaillées
+- Schémas de requêtes et réponses
+- Exemples de requêtes (cURL, JavaScript)
+- Interface de test "Try it out" pour tester les endpoints directement
+
+**Accès à la documentation:**
+- Interface interactive: `http://localhost:1411/api-docs`
+- Spécification OpenAPI (JSON): `http://localhost:1411/api-docs.json`
+
+> **Note:** Remplacez `localhost:1411` par l'adresse de votre serveur en production.
+
 ## Prérequis
 
 - Node.js 18+ ou 20+
@@ -69,116 +83,6 @@ npm run dev
 ```bash
 npm run build
 npm start
-```
-
-## Endpoints de l'API
-
-### Health Check
-```
-GET /ping
-```
-Vérification de la disponibilité de l'API.
-
-**Réponse :**
-```json
-{
-  "status": "ok",
-  "timestamp": "2025-12-24T12:00:00.000Z"
-}
-```
-
-### Démarrer le serveur
-```
-POST /minecraft/start
-```
-Démarre le serveur Minecraft via systemd.
-
-**Réponse :**
-```json
-{
-  "success": true,
-  "message": "Minecraft server started successfully"
-}
-```
-
-### Arrêter le serveur
-```
-POST /minecraft/stop
-```
-Arrête le serveur Minecraft et déclenche l'extinction du système après 1 seconde.
-
-**Réponse :**
-```json
-{
-  "success": true,
-  "message": "Minecraft server stopped. System shutting down..."
-}
-```
-
-### Redémarrer le serveur
-```
-POST /minecraft/restart
-```
-Redémarre le serveur Minecraft.
-
-**Réponse :**
-```json
-{
-  "success": true,
-  "message": "Minecraft server restarted successfully"
-}
-```
-
-### Obtenir le statut
-```
-GET /minecraft/status
-```
-Récupère le statut du serveur et les informations en temps réel.
-
-**Réponse (serveur actif) :**
-```json
-{
-  "success": true,
-  "message": "Status retrieved successfully",
-  "data": {
-    "serviceStatus": "running",
-    "playersOnline": 3,
-    "maxPlayers": 20,
-    "version": "1.21.4",
-    "motd": "Un serveur Minecraft"
-  }
-}
-```
-
-**Réponse (serveur arrêté) :**
-```json
-{
-  "success": true,
-  "message": "Status retrieved successfully",
-  "data": {
-    "serviceStatus": "stopped",
-    "playersOnline": 0
-  }
-}
-```
-
-### Statut de l'extinction automatique
-```
-GET /minecraft/auto-shutdown/status
-```
-Récupère l'état du service d'extinction automatique.
-
-**Réponse :**
-```json
-{
-  "success": true,
-  "message": "Auto-shutdown status retrieved successfully",
-  "data": {
-    "enabled": true,
-    "idleMinutes": 15,
-    "isIdle": true
-  }
-}
 ```
 
 ## Configuration
@@ -249,6 +153,8 @@ src/
 - **Pino** : Logger JSON haute performance
 - **minecraft-server-util** : Bibliothèque pour interroger les serveurs Minecraft
 - **dotenv** : Gestion des variables d'environnement
+- **Swagger/OpenAPI** : Documentation interactive de l'API
+- **Zod** : Validation de schémas avec inférence de types
 
 ## Déploiement
 
